@@ -2,15 +2,18 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Input, Button, Card, Spinner } from "@heroui/react";
+import { Input, Button, Card, Spinner, TextField, Label, InputGroup } from "@heroui/react";
 import { HiLockClosed, HiUser, HiEnvelope } from "react-icons/hi2";
 import { FiUploadCloud } from "react-icons/fi";
 import { authClient } from "@/lib/auth-client";
+import { Router } from "next/router";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState("");
   const [imageFile, setImageFile] = useState(null);
+  const Router= useRouter();
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -108,11 +111,7 @@ export default function RegisterPage() {
         email: form.email,
         password: form.password,
         image: uploadedImageUrl,
-        callbackURL: "/",
-      }, {
-        body: {
-          isPremium: "false" // কাস্টম ফিল্ড Better-Auth এর জন্য
-        }
+        
       });
 
       if (error) throw new Error(error.message);
@@ -123,6 +122,7 @@ export default function RegisterPage() {
         setImageFile(null);
         setPreview("");
         setErrors({});
+        Router.push('/auth/signin')
       }
     } catch (err) {
       alert(err.message || "Something went wrong!");
@@ -143,56 +143,93 @@ export default function RegisterPage() {
             Create Account 🚀
           </h1>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
+
             {/* NAME */}
-            <Input
-              name="name"
-              type="text"
-              placeholder="Full Name"
-              value={form.name}
-              onChange={handleChange}
-              startcontent={<HiUser className="text-gray-400" />}
-              invalid={!!errors.name}
-              errormessage={errors.name}
-              variant="bordered"
-              className="w-full"
-            />
+            <TextField>
+              <Label>Full Name</Label>
+              <InputGroup>
+                <InputGroup.Prefix>
+                  <HiUser className="text-gray-400" />
+                </InputGroup.Prefix>
+
+                <InputGroup.Input
+                  name="name"
+                  type="text"
+                  value={form.name}
+                  onChange={handleChange}
+                  placeholder="Enter your full name"
+                />
+
+                <InputGroup.Suffix />
+              </InputGroup>
+
+              {errors.name && (
+                <p className="text-xs text-red-400 mt-1">{errors.name}</p>
+              )}
+            </TextField>
 
             {/* EMAIL */}
-            <Input
-              name="email"
-              type="email"
-              placeholder="Email Address"
-              value={form.email}
-              onChange={handleChange}
-              startcontent={<HiEnvelope className="text-gray-400" />}
-              invalid={!!errors.email}
-              errormessage={errors.email}
-              variant="bordered"
-              className="w-full"
-            />
+            <TextField>
+              <Label>Email Address</Label>
+              <InputGroup>
+                <InputGroup.Prefix>
+                  <HiEnvelope className="text-gray-400" />
+                </InputGroup.Prefix>
+
+                <InputGroup.Input
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder="Enter your email"
+                />
+
+                <InputGroup.Suffix />
+              </InputGroup>
+
+              {errors.email && (
+                <p className="text-xs text-red-400 mt-1">{errors.email}</p>
+              )}
+            </TextField>
 
             {/* PASSWORD */}
-            <Input
-              name="password"
-              type="password"
-              placeholder="Password"
-              value={form.password}
-              onChange={handleChange}
-              startcontent={<HiLockClosed className="text-gray-400" />}
-              invalid={!!errors.password}
-              errormessage={errors.password}
-              variant="bordered"
-              className="w-full"
-            />
+            <TextField>
+              <Label>Password</Label>
+              <InputGroup>
+                <InputGroup.Prefix>
+                  <HiLockClosed className="text-gray-400" />
+                </InputGroup.Prefix>
 
-            {/* IMAGE UPLOAD CONTAINER */}
+                <InputGroup.Input
+                  name="password"
+                  type="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder="Enter password"
+                />
+
+                <InputGroup.Suffix />
+              </InputGroup>
+
+              {errors.password && (
+                <p className="text-xs text-red-400 mt-1">{errors.password}</p>
+              )}
+            </TextField>
+
+            {/* IMAGE UPLOAD (same logic, only UI clean) */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-300">Profile Picture</label>
+              <Label>Profile Picture</Label>
+
               <div className="flex items-center gap-4">
+
                 <div className="w-16 h-16 flex items-center justify-center border border-dashed border-white/20 rounded-xl bg-zinc-800 overflow-hidden shrink-0">
                   {preview ? (
-                    <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+                    <img
+                      src={preview}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <FiUploadCloud className="w-6 h-6 text-gray-400" />
                   )}
@@ -208,24 +245,30 @@ export default function RegisterPage() {
                   />
                 </label>
               </div>
+
               {errors.image && (
-                <p className="text-xs text-danger font-medium mt-1">{errors.image}</p>
+                <p className="text-xs text-red-400 mt-1">{errors.image}</p>
               )}
             </div>
 
-            {/* SUBMIT BUTTON */}
+            {/* SUBMIT */}
             <Button
               type="submit"
               color="primary"
               className="w-full font-semibold mt-2"
-              isLoading={loading}      // লোডিং স্পিনার দেখাবে
-              isDisabled={loading}     // লোডিং চলাকালীন বাটন ক্লিক বন্ধ থাকবে
+              isLoading={loading}
+              isDisabled={loading}
             >
-              {loading ? <div className="flex items-center gap-2">
-    <Spinner color="current" size="sm" />
-    <span>Loading...</span>
-  </div>: "Sign Up"}
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <Spinner color="current" size="sm" />
+                  <span>Loading...</span>
+                </div>
+              ) : (
+                "Sign Up"
+              )}
             </Button>
+
           </form>
 
           <p className="text-sm text-center text-gray-400">

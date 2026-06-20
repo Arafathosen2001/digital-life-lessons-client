@@ -1,6 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/Components/Navbar";
 import Footer from "@/Components/Footer";
 import AppNavbar from "@/Components/AppNavbar";
 
@@ -23,7 +22,7 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased  light`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark light`}
       // data-theme="dark"
       data-theme="light"
     >

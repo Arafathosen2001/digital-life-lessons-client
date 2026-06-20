@@ -1,124 +1,198 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Input, Button, Card, CardBody } from "@heroui/react";
-import { HiLockClosed, HiEnvelope } from "react-icons/hi2";
+import React, { useState } from "react";
+import { Input, Button, Card, Link } from "@heroui/react";
+import { authClient } from "@/lib/auth-client";
+import { useRouter, useSearchParams } from "next/navigation";
+import logo from "../../../../public/Image/logo.png"
+import Image from "next/image";
 
 export default function LoginPage() {
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-
-  const [form, setForm] = useState({
+  const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
 
-  const handleSubmit = async (e) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/";
+
+  const handleSignIn = async (e) => {
     e.preventDefault();
+
     setLoading(true);
+    setMessage({ type: "", text: "" });
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+      const { error } = await authClient.signIn.email({
+        email: formData.email,
+        password: formData.password,
+        rememberMe: true,
       });
 
-      const data = await res.json();
+      if (error) {
+        setMessage({
+          type: "error",
+          text: error.message || "Invalid email or password.",
+        });
+      } else {
+        setMessage({
+          type: "success",
+          text: "Login successful! Redirecting...",
+        });
 
-      if (!res.ok) throw new Error(data.message);
-
-      localStorage.setItem("token", data.token);
-
-      router.push("/dashboard");
+        setTimeout(() => {
+          router.push(redirectTo);
+        }, 1200);
+      }
     } catch (err) {
-      alert(err.message);
+      setMessage({
+        type: "error",
+        text: "Something went wrong!",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleGoogleSignIn = async () => {
+    try {
+      setLoading(true);
+
+      const { error } = await authClient.signIn.social({
+        provider: "google",
+        callbackURL: redirectTo,
+      });
+
+      if (error) {
+        setMessage({
+          type: "error",
+          text: error.message || "Google sign-in failed",
+        });
+      }
+    } catch (err) {
+      setMessage({
+        type: "error",
+        text: "Something went wrong with Google login",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-violet-950 px-4 relative overflow-hidden">
 
-      {/* floating background blobs */}
-      <div className="absolute w-72 h-72 bg-purple-500/30 blur-3xl rounded-full top-10 left-10 animate-pulse" />
-      <div className="absolute w-72 h-72 bg-blue-500/30 blur-3xl rounded-full bottom-10 right-10 animate-pulse" />
+      {/* Background Effects */}
+      <div className="absolute w-96 h-96 bg-violet-600/20 blur-3xl rounded-full top-10 left-10 animate-pulse" />
+      <div className="absolute w-96 h-96 bg-purple-600/20 blur-3xl rounded-full bottom-10 right-10 animate-pulse" />
 
-      {/* card */}
-      <Card className="w-full max-w-md backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl rounded-2xl">
+      <Card className="w-full max-w-md p-8 border border-white/10 bg-white/5 backdrop-blur-xl rounded-3xl shadow-2xl">
 
-        <div className="space-y-6 p-8">
+        {/* Header */}
+        <div className="text-center mb-8">
 
-          {/* header */}
-          <div className="text-center space-y-2">
-            <h1 className="text-2xl font-bold text-white">
-              Welcome Back
-            </h1>
-            <p className="text-sm text-white/60">
-              Login to continue your journey 🚀
-            </p>
+          <div className="mx-auto w-16 h-16 flex items-center justify-center rounded-2xl bg-violet-500/10 border border-violet-500/20 text-2xl">
+            {logo ? (<Image alt="logo" src={logo} width={70} height={70}></Image>) : ('📘')}
           </div>
 
-          {/* form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <h1 className="mt-5 text-3xl font-bold text-white">
+            Welcome Back
+          </h1>
 
-            {/* email */}
-            <div className="relative">
-              <HiEnvelope className="absolute left-3 top-3 text-white/50" />
-              <Input
-                name="email"
-                type="email"
-                placeholder="Email"
-                onChange={handleChange}
-                required
-                className="pl-10"
-              />
-            </div>
-
-            {/* password */}
-            <div className="relative">
-              <HiLockClosed className="absolute left-3 top-3 text-white/50" />
-              <Input
-                name="password"
-                type="password"
-                placeholder="Password"
-                onChange={handleChange}
-                required
-                className="pl-10"
-              />
-            </div>
-
-            {/* button */}
-            <Button
-              type="submit"
-              color="primary"
-              className="w-full font-semibold"
-              isLoading={loading}
-            >
-              Sign In
-            </Button>
-
-          </form>
-
-          {/* footer */}
-          <p className="text-center text-sm text-white/60">
-            Don’t have an account?{" "}
-            <Link href="/auth/register" className="text-blue-400 font-medium">
-              Create account
-            </Link>
+          <p className="text-gray-400 mt-2 text-sm">
+            Sign in to continue your learning journey
           </p>
-
         </div>
 
-      </Card>
+        {/* Message */}
+        {message.text && (
+          <div
+            className={`mb-5 text-sm rounded-xl border p-3 ${message.type === "error"
+                ? "bg-red-500/10 border-red-500/20 text-red-400"
+                : "bg-green-500/10 border-green-500/20 text-green-400"
+              }`}
+          >
+            {message.text}
+          </div>
+        )}
 
+        {/* Form */}
+        <form onSubmit={handleSignIn} className="space-y-5">
+
+          <Input
+            label="Email"
+            type="email"
+            placeholder="you@example.com"
+            variant="bordered"
+            size="lg"
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
+            className="w-full"
+          />
+
+          <Input
+            label="Password"
+            type="password"
+            placeholder="Enter your password"
+            variant="bordered"
+            size="lg"
+            value={formData.password}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
+            className="w-full"
+          />
+
+          <div className="flex justify-end">
+            <Link
+              href="/forgot-password"
+              className="text-sm text-violet-400 hover:text-violet-300"
+            >
+              Forgot Password?
+            </Link>
+          </div>
+
+          <Button
+            type="submit"
+            isLoading={loading}
+            className="w-full font-semibold rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:scale-[1.02] transition"
+          >
+            {loading ? "Signing In..." : "Sign In"}
+          </Button>
+        </form>
+
+        {/* Divider */}
+        <div className="flex items-center my-5">
+          <div className="h-px flex-1 bg-white/10" />
+          <span className="px-4 text-xs text-gray-400">OR</span>
+          <div className="h-px flex-1 bg-white/10" />
+        </div>
+
+        {/* Google Button (UI only) */}
+        <Button
+          onClick={handleGoogleSignIn}
+          isDisabled={loading}
+          className="w-full rounded-2xl border border-white/10 bg-white/5 text-white hover:bg-white/10 transition"
+        >
+          Continue with Google
+        </Button>
+
+        {/* Footer */}
+        <p className="text-center text-sm text-gray-400 mt-6">
+          Don’t have an account?{" "}
+          <Link
+            href={`/signup?redirect=${redirectTo}`}
+            className="text-violet-400 font-medium"
+          >
+            Create account
+          </Link>
+        </p>
+      </Card>
     </div>
   );
 }

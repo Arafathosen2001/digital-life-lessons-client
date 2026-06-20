@@ -10,11 +10,18 @@ import {
 } from "react-icons/hi2";
 import logo from "../../public/Image/logo.png"
 import Image from "next/image";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 export default function AppNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const {
+    data: session,
+    isPending, //loading state
+  } = authClient.useSession();
+  console.log(session)
 
   // 👉 outside click handler
   useEffect(() => {
@@ -35,7 +42,7 @@ export default function AppNavbar() {
   }, []);
 
   // Replace with Better Auth session
-  const user = null;
+  const user = session?.user;
 
 
   // const user = {
@@ -73,6 +80,12 @@ export default function AppNavbar() {
 
 
   }
+  const route=useRouter();
+  const handelLogout=async()=>{
+    await authClient.signOut();
+    alert('Sign Out Successfull')
+    route.push('/auth/signin')
+  }
 
   return (
     <nav className="sticky top-0 z-50 border-b border-default-200 backdrop-blur-xl">
@@ -107,7 +120,7 @@ export default function AppNavbar() {
           {!user ? (
             <>
               <Link
-                href="/signin"
+                href="/auth/signin"
                 variant="light"
                 className="border bg1 text-gray-100 rounded-3xl px-5 py-2  hover:scale-105"
               >
@@ -115,7 +128,7 @@ export default function AppNavbar() {
               </Link>
 
               <Link
-                href="/register"
+                href="/auth/register"
                 color="primary"
                 className="border bg2 text-gray-100 rounded-3xl px-5 py-2  hover:scale-105"
               >
@@ -124,7 +137,7 @@ export default function AppNavbar() {
             </>
           ) : (
             <>
-              {user.isPremium ? (
+              {user?.isPremium ? (
                 <span className="rounded-full bg-warning/10 px-3 py-1 text-xs font-semibold text-warning">
                   Premium ⭐
                 </span>
@@ -135,16 +148,19 @@ export default function AppNavbar() {
                   //   label: "Upgrade",
                   //   href: "/pricing",
                   // })
-              )}
+                )}
 
               <div className="relative" ref={dropdownRef}>
 
                 {/* Avatar button */}
                 <button
                   onClick={() => setProfileOpen((prev) => !prev)}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 cursor-pointer"
                 >
-                  <Avatar src={user.image} size="sm" />
+                  <Avatar>
+                    <Avatar.Image alt="John Doe" src={user?.image} />
+                    <Avatar.Fallback>JD</Avatar.Fallback>
+                  </Avatar>
                 </button>
 
                 {/* Dropdown */}
@@ -171,7 +187,7 @@ export default function AppNavbar() {
                       Dashboard
                     </Link>
 
-                    <button className="w-full rounded-lg px-3 py-2 text-left text-danger hover:bg-danger/10">
+                    <button onClick={handelLogout} className="w-full rounded-lg px-3 py-2 text-left text-danger hover:bg-danger/10 cursor-pointer">
                       Logout
                     </button>
                   </div>
