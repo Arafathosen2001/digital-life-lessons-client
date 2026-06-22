@@ -11,17 +11,20 @@ import {
   HiUser,
   HiOutlineBars3,
 } from "react-icons/hi2";
+import { useClientSession } from "@/lib/getData/session/session";
 
 export default function DashboardLayout({ children }) {
   const [open, setOpen] = useState(true);
+  const { session } = useClientSession();
 
   // demo user (later replace with Better Auth)
-  const user = {
-    name: "Arafat Hosen",
-    role: "user", // or admin
-    image: "https://i.pravatar.cc/150?img=3",
-    isPremium: false,
-  };
+  // const user = {
+  //   name: "Arafat Hosen",
+  //   role: "user", // or admin
+  //   image: "https://i.pravatar.cc/150?img=3",
+  //   isPremium: false,
+  // };
+  const user = session?.user;
 
   const menu = [
     { name: "Home", href: "/dashboard", icon: HiHome },
@@ -36,10 +39,10 @@ export default function DashboardLayout({ children }) {
     { name: "Users", href: "/dashboard/admin/manage-users" },
     { name: "Lessons", href: "/dashboard/admin/manage-lessons" },
     { name: "Reports", href: "/dashboard/admin/reported-lessons" },
-    { name: "Profile", href: "/dashboard/admin/profile" },
+    { name: "Profile", href: "/dashboard/profile" },
   ];
 
-  const isAdmin = user.role === "admin";
+  const isAdmin = user?.role === "admin";
 
   const finalMenu = isAdmin ? adminMenu : menu;
 
@@ -48,14 +51,13 @@ export default function DashboardLayout({ children }) {
 
       {/* Sidebar */}
       <aside
-        className={`${
-          open ? "w-64" : "w-20"
-        } transition-all duration-300 border-r border-white/10 bg-black/30 backdrop-blur-xl p-4`}
+        className={`${open ? "w-64" : "w-20"
+          } transition-all duration-300 border-r border-white/10 bg-black/30 backdrop-blur-xl p-4`}
       >
         {/* top */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="font-bold">
-            {open && "Dashboard" }
+            {open && "Dashboard"}
           </h1>
 
           <button onClick={() => setOpen(!open)}>
@@ -65,14 +67,17 @@ export default function DashboardLayout({ children }) {
 
         {/* user */}
         <div className="flex items-center gap-3 mb-6">
-          <Avatar src={user.image} size="sm" />
+          <Avatar>
+            <Avatar.Image alt="John Doe" src={user?.image} />
+            <Avatar.Fallback>JD</Avatar.Fallback>
+          </Avatar>
           {open && (
             <div>
               <p className="text-sm font-semibold">
-                {user.name}
+                {user?.name}
               </p>
               <p className="text-xs opacity-60">
-                {user.role}
+                {user?.role}
               </p>
             </div>
           )}

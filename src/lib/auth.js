@@ -10,22 +10,26 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     autoSignIn: false //defaults to true
-},
-user: {
-  additionalFields: {
+  },
+  user: {
+    additionalFields: {
       isPremium: {
-          defaultValue: false
+        type: "boolean", // টাইপ অবশ্যই বলে দিতে হবে
+        defaultValue: false
+      },
+      role: {
+        type: "string", // টাইপ সেট করতে হবে
+        defaultValue: "user" // ডিফল্ট ভ্যালু হিসেবে "user" থাকবে
       }
-  }
-},
-    socialProviders: {
-        google: { 
-          clientId: process.env.GOOGLE_CLIENT_ID , 
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET, 
-        }, 
-    },
+    }
+  },
+  socialProviders: {
+    google: { 
+      clientId: process.env.GOOGLE_CLIENT_ID, 
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET, 
+    }, 
+  },
   database: mongodbAdapter(db, {
-    // Optional: if you don't provide a client, database transactions won't be enabled.
     client
   }),
 });

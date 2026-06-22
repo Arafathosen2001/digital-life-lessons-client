@@ -1,32 +1,156 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   Button,
   Card,
   Avatar,
   Chip,
-  Divider,
-  Separator,
 } from "@heroui/react";
+import { FaBookmark,FaClock, FaFlag, FaHeart, FaRegHeart, FaRegBookmark } from "react-icons/fa";
+import { BiSolidLike,BiLike } from "react-icons/bi";
+import { useClientSession } from "@/lib/getData/session/session";
 
+export default function LessonDetailsContent({ lessonById }) {
+  const { session } = useClientSession();
+  const user = session?.user;
+  const lesson = lessonById;
+  const lessonId = lesson._id; 
+  const currentUser = user;
 
-import { FaBookmark, FaClock, FaFlag, FaHeart } from "react-icons/fa";
+  // States
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [saved, setSaved] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [newCommentText, setNewCommentText] = useState("");
 
-export default function LessonDetailsContent() {
-  const lesson = {
-    title: "The Power of Positive Thinking",
-    image:
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200",
-    category: "Mindset",
-    emotionalTone: "Inspirational",
-    readTime: "5 min read",
-    accessLevel: "Free",
+  // ব্যাকএন্ড থেকে প্রাথমিক ডেটা লোড করা
+  useEffect(() => {
+    if (!lessonId) return;
+
+    // লাইক স্ট্যাটাস আনা
+    fetch(`http://localhost:5000/api/lessons/${lessonId}/like-status?userId=${currentUser?.id}`)
+      .then(res => res.json())
+      .then(data => {
+        setLikeCount(data.totalLikes);
+        setLiked(data.isLiked);
+      })
+      .catch(err => console.error("Error fetching like status:", err));
+
+    // কমেন্ট লিস্ট আনা
+    fetch(`http://localhost:5000/api/lessons/${lessonId}/comments`)
+      .then(res => res.json())
+      .then(data => setComments(data || []))
+      .catch(err => console.error("Error fetching comments:", err));
+      
+  }, [lessonId, currentUser?.id]);
+
+  // Like Handle Function
+  const handleLike = async () => {
+    if (!currentUser?.id) {
+      alert("Please log in to like this lesson!");
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/lessons/${lessonId}/like`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: currentUser.id }) // ফিক্সড: userId থেকে id করা হয়েছে
+      });
+      const data = await res.json();
+      setLiked(data.liked);
+      setLikeCount(prev => data.liked ? prev + 1 : prev - 1);
+    } catch (err) {
+      console.error("Like tracking error:", err);
+    }
+  };
+
+  // Save Handle Function
+  const handleSave = async () => {
+    if (!currentUser?.id) {
+      alert("Please log in to save this lesson!");
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/lessons/${lessonId}/save`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: currentUser.id }) // ফিক্সড: userId থেকে id করা হয়েছে
+      });
+      const data = await res.json();
+      setSaved(data.saved);
+      alert(data.saved ? "Saved to favorites!" : "Removed from favorites!");
+    } catch (err) {
+      console.error("Save error:", err);
+    }
+  };
+
+  // Report Handle Function
+  const handleReport = async () => {
+    if (!currentUser?.id) {
+      alert("Please log in to report this lesson!");
+      return;
+    }
+
+    const reason = prompt("Enter the reason for reporting this lesson:");
+    if (!reason) return;
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/lessons/${lessonId}/report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: currentUser.id, reason }) // ফিক্সড: userId থেকে id করা হয়েছে
+      });
+      if (res.ok) alert("Lesson reported successfully.");
+    } catch (err) {
+      console.error("Report error:", err);
+    }
+  };
+
+  // Comment Post Handle Function
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
+    if (!newCommentText.trim()) return;
+
+    if (!currentUser?.id) {
+      alert("Please log in to make a comment!");
+      return;
+    }
+  
+    try {
+      const res = await fetch(`http://localhost:5000/api/lessons/${lessonId}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: currentUser?.id,
+          commentText: newCommentText,
+          // রিয়েল-টাইম ডিসপ্লের সুবিধার্থে নাম ও ইমেজ পাঠানো যেতে পারে
+          userName: currentUser?.name || "Anonymous User",
+          userAvatar: currentUser?.image || ""
+        })
+      });
+  
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Server responded with status ${res.status}: ${errorText}`);
+      }
+  
+      const postedComment = await res.json();
+      
+      // ইনস্ট্যান্ট UI আপডেটের জন্য স্টেট সেট করা
+      setComments([postedComment, ...comments]); 
+      setNewCommentText("");
+    } catch (err) {
+      console.error("Comment submission error:", err.message);
+    }
   };
 
   return (
-    <div className="grid lg:grid-cols-4 gap-8">
+    <div className="grid lg:grid-cols-4 gap-8 p-6 max-w-7xl mx-auto">
       {/* Main Content */}
-
       <div className="lg:col-span-3">
         <img
           src={lesson.image}
@@ -36,59 +160,38 @@ export default function LessonDetailsContent() {
 
         <div className="mt-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-bold">
-              {lesson.title}
-            </h1>
+            <h1 className="text-4xl font-bold">{lesson.title}</h1>
           </div>
 
-          <Button
-            color="primary"
-            variant="flat"
-          >
-            <FaBookmark size={18} />
-            Add to Favorites
+          <Button color="primary" variant="flat" onClick={handleSave}>
+            {saved ? <FaBookmark size={18} /> : <FaRegBookmark size={18} />}
+            {saved ? "Favorited" : "Add to Favorites"}
           </Button>
         </div>
 
         <div className="flex flex-wrap gap-3 mt-5">
           <Chip>{lesson.category}</Chip>
-
-          <Chip color="secondary">
-            {lesson.emotionalTone}
-          </Chip>
-
-          <Chip
-          >
-            <FaClock size={14} />
+          <Chip color="secondary">{lesson.emotionalTone}</Chip>
+          <Chip>
+            <FaClock size={14} className="inline mr-1" />
             {lesson.readTime}
           </Chip>
-
-          <Chip color="success">
-            {lesson.accessLevel}
-          </Chip>
+          <Chip color="success">{lesson.accessLevel}</Chip>
         </div>
 
-        <Separator className="my-8" />
+        <hr className="my-8 opacity-20" />
 
         <section>
-          <h2 className="text-2xl font-bold mb-4">
-            About This Lesson
-          </h2>
-
+          <h2 className="text-2xl font-bold mb-4">About This Lesson</h2>
           <p className="text-default-600 leading-8">
-            Positive thinking is more than a feel-good
-            attitude. It helps us overcome obstacles,
-            maintain motivation and develop resilience
-            during difficult times.
+            Positive thinking is more than a feel-good attitude. It helps us overcome obstacles,
+            maintain motivation and develop resilience during difficult times.
           </p>
         </section>
 
         <section className="mt-10">
-          <h2 className="text-2xl font-bold mb-4">
-            What You Will Learn
-          </h2>
-
-          <ul className="space-y-3">
+          <h2 className="text-2xl font-bold mb-4">What You Will Learn</h2>
+          <ul className="space-y-3 text-default-600">
             <li>✓ Understand positive thinking</li>
             <li>✓ Build mental resilience</li>
             <li>✓ Improve daily productivity</li>
@@ -96,122 +199,91 @@ export default function LessonDetailsContent() {
           </ul>
         </section>
 
-        <Separator className="my-8" />
+        <hr className="my-8 opacity-20" />
 
-        {/* Actions */}
-
+        {/* Actions Section */}
         <div className="flex flex-wrap gap-3">
-          <Button
-            color="danger"
-            variant="flat"
-          >
-            <FaHeart size={18} />
-            Like
+          <Button  variant={liked ? "solid" : "flat"} onClick={handleLike}>
+            {liked ? <BiSolidLike size={18} /> : <BiLike size={18} />}
+            Like ({likeCount})
           </Button>
 
-          <Button
-            variant="flat"
-          >
-            <FaBookmark size={18} />
-            Save
+          <Button variant={saved ? "solid" : "flat"} color={saved ? "primary" : "default"} onClick={handleSave}>
+            
+            {saved ? <><FaBookmark size={18} />Saved</> : <><FaRegBookmark />Save</>}
           </Button>
 
-          <Button
-            color="warning"
-            variant="flat"
-          >
+          <Button color="warning" variant="flat" onClick={handleReport}>
             <FaFlag size={18} />
             Report
           </Button>
         </div>
 
-        {/* Comments */}
-
+        {/* Comments Section */}
         <section className="mt-12">
-          <h2 className="text-2xl font-bold mb-6">
-            Comments (24)
-          </h2>
+          <h2 className="text-2xl font-bold mb-6">Comments ({comments.length})</h2>
 
-          <Card>
-            <div>
-              <div className="flex gap-3">
-                <Avatar />
+          {/* New Comment Form */}
+          <form onSubmit={handleCommentSubmit} className="mb-6 flex flex-col gap-3">
+            <textarea
+              className="w-full p-4 rounded-xl border border-default-200 bg-transparent text-sm focus:outline-none focus:border-primary"
+              rows={3}
+              placeholder="Write a comment..."
+              value={newCommentText}
+              onChange={(e) => setNewCommentText(e.target.value)}
+            />
+            <Button color="primary" type="submit" className="self-end">Submit Comment</Button>
+          </form>
 
-                <div>
-                  <h4 className="font-semibold">
-                    James Wilson
-                  </h4>
-
-                  <p className="text-sm text-default-500">
-                    This lesson really helped me.
-                  </p>
+          {/* Comments List */}
+          <div className="space-y-4">
+            {comments.map((comment) => (
+              <Card key={comment._id} className="p-4">
+                <div className="p-0">
+                  <div className="flex gap-3">
+                    <Avatar src={comment.userAvatar || "https://i.pravatar.cc/150?img=33"} />
+                    <div>
+                      <h4 className="font-semibold text-sm">{comment.userName || "User"}</h4>
+                      <p className="text-xs text-default-400 mb-1">
+                        {comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : "Just now"}
+                      </p>
+                      <p className="text-sm text-default-600">{comment.commentText}</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </Card>
+              </Card>
+            ))}
+          </div>
         </section>
       </div>
 
       {/* Sidebar */}
-
       <div className="space-y-6">
-        <Card>
-          <div>
-            <h3 className="font-bold mb-4">
-              About Author
-            </h3>
-
-            <div className="flex gap-3">
-              <Avatar
-                src="https://i.pravatar.cc/150?img=5"
-                size="lg"
-              />
-
-              <div>
-                <h4 className="font-semibold">
-                  Sarah Johnson
-                </h4>
-
-                <p className="text-sm text-default-500">
-                  12 Lessons
-                </p>
-              </div>
+        <Card className="p-4">
+          <h3 className="font-bold mb-4">About Author</h3>
+          <div className="flex gap-3">
+            <Avatar src="https://i.pravatar.cc/150?img=5" size="lg" />
+            <div>
+              <h4 className="font-semibold">Sarah Johnson</h4>
+              <p className="text-sm text-default-500">12 Lessons</p>
             </div>
-
-            <Button
-              className="mt-4"
-              variant="flat"
-              fullWidth
-            >
-              View Profile
-            </Button>
           </div>
+          <Button className="mt-4" variant="flat" fullWidth>View Profile</Button>
         </Card>
 
-        <Card>
-          <div>
-            <h3 className="font-bold mb-4">
-              Related Lessons
-            </h3>
-
-            <div className="space-y-4">
-              {[1, 2, 3].map((item) => (
-                <div
-                  key={item}
-                  className="flex gap-3"
-                >
-                  <img
-                    src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=300"
-                    alt=""
-                    className="w-20 h-16 rounded-lg object-cover"
-                  />
-
-                  <p className="text-sm font-medium">
-                    How to Build Discipline
-                  </p>
-                </div>
-              ))}
-            </div>
+        <Card className="p-4">
+          <h3 className="font-bold mb-4">Related Lessons</h3>
+          <div className="space-y-4">
+            {[1, 2, 3].map((item) => (
+              <div key={item} className="flex gap-3">
+                <img
+                  src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=300"
+                  alt=""
+                  className="w-20 h-16 rounded-lg object-cover"
+                />
+                <p className="text-sm font-medium">How to Build Discipline</p>
+              </div>
+            ))}
           </div>
         </Card>
       </div>

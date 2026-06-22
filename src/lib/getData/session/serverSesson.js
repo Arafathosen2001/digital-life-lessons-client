@@ -1,0 +1,10 @@
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+
+export const getServertSession = async() => {
+    "use server";
+    const session = await auth.api.getSession({
+        headers: await headers() // you need to pass the headers object.
+    })
+      return session;
+    };

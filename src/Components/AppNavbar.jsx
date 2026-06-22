@@ -12,16 +12,14 @@ import logo from "../../public/Image/logo.png"
 import Image from "next/image";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import { useClientSession } from "@/lib/getData/session/session";
 
 export default function AppNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const {
-    data: session,
-    isPending, //loading state
-  } = authClient.useSession();
-  console.log(session)
+  const {session,isPending}=useClientSession();
+  // console.log(session)
 
   // 👉 outside click handler
   useEffect(() => {
@@ -143,7 +141,7 @@ export default function AppNavbar() {
                 </span>
               ) :
                 (
-                  <Link className="" href={"/pricing"}>Upgrade</Link>
+                  <Link className="border bg2 text-gray-100 rounded-3xl px-5 py-2  hover:scale-105" href={"/pricing"}>Upgrade</Link>
                   // navItems.push({
                   //   label: "Upgrade",
                   //   href: "/pricing",

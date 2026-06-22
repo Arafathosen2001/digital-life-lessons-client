@@ -11,12 +11,16 @@ import {
   Description,
   ListBox,
 } from "@heroui/react";
+import { useClientSession } from "@/lib/getData/session/session";
 
 export default function AddLessonPage() {
   const [loading, setLoading] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [accessLevel, setAccessLevel] = useState("free");
+  const { session } = useClientSession();
+  const user = session?.user;
 
-  // আসল কোডে useUser() বা useAuth() থেকে নেবে
-  const isPremium = false;
+  const isPremium = user?.isPremium;
 
   const categories = [
     { id: "growth", label: "Personal Growth" },
@@ -38,41 +42,75 @@ export default function AddLessonPage() {
     { id: "premium", label: "Premium 🔒" },
   ];
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+      setImagePreview(null);
+    }
+  };
+
+  const uploadImage = async (file) => {
+    if (!file || file.size === 0) return null;
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const res = await fetch(
+      `https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMAGE_UPLOAD_API}`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    if (!res.ok) throw new Error("Image upload failed");
+
+    const data = await res.json();
+    return data.data.url;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
-    const formData = new FormData(e.target);
-
-    const lessonData = {
-      title: formData.get("title"),
-      description: formData.get("description"),
-      category: formData.get("category"),
-      emotionalTone: formData.get("emotionalTone"),
-      accessLevel: isPremium ? formData.get("accessLevel") : "free",
-      visibility: "public",
-      createdAt: new Date().toISOString(),
-    };
-
-    // Image আলাদা handle করতে হবে (imgbb / cloudinary)
+    const formData = new FormData(e.currentTarget);
     const imageFile = formData.get("image");
 
-    console.log("Lesson Data:", lessonData);
-    console.log("Image File:", imageFile);
-
-    setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lessons`, {
+      let imageUrl = "";
+      if (imageFile && imageFile.size > 0) {
+        imageUrl = await uploadImage(imageFile);
+      }
+
+      const lessonData = {
+        title: formData.get("title"),
+        description: formData.get("description"),
+        category: formData.get("category"),
+        emotionalTone: formData.get("emotionalTone"),
+        accessLevel: isPremium ? accessLevel : "free",
+        visibility: "public",
+        image: imageUrl,
+        userId: user?.id || user?._id,
+      };
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/lessons`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(lessonData),
       });
 
+      if (!res.ok) throw new Error("Failed to save lesson");
+
       const data = await res.json();
-      console.log("Saved:", data);
-      // toast.success("Lesson created!") — react-hot-toast বা sonner দিয়ে
+      console.log("Saved Successfully:", data);
+
+      e.target.reset();
+      setImagePreview(null);
+
     } catch (err) {
       console.error("Error:", err);
-      // toast.error("Something went wrong!")
     } finally {
       setLoading(false);
     }
@@ -102,16 +140,16 @@ export default function AddLessonPage() {
         />
 
         {/* Category */}
-        <Select name="category" required={true}>
-          <Label>Category</Label>
-          <Select.Trigger>
+        <Select name="category" aria-label="Select Category" required={true}>
+          <Label id="category-label">Category</Label>
+          <Select.Trigger aria-labelledby="category-label">
             <Select.Value />
             <Select.Indicator />
           </Select.Trigger>
           <Select.Popover>
-            <ListBox>
+            <ListBox aria-labelledby="category-label">
               {categories.map((item) => (
-                <ListBox.Item key={item.id} id={item.id}>
+                <ListBox.Item key={item.id} id={item.id} textValue={item.label}>
                   <Label>{item.label}</Label>
                 </ListBox.Item>
               ))}
@@ -120,16 +158,16 @@ export default function AddLessonPage() {
         </Select>
 
         {/* Emotional Tone */}
-        <Select name="emotionalTone" required={true}>
-          <Label>Emotional Tone</Label>
-          <Select.Trigger>
+        <Select name="emotionalTone" aria-label="Select Emotional Tone" required={true}>
+          <Label id="tone-label">Emotional Tone</Label>
+          <Select.Trigger aria-labelledby="tone-label">
             <Select.Value />
             <Select.Indicator />
           </Select.Trigger>
           <Select.Popover>
-            <ListBox>
+            <ListBox aria-labelledby="tone-label">
               {tones.map((item) => (
-                <ListBox.Item key={item.id} id={item.id}>
+                <ListBox.Item key={item.id} id={item.id} textValue={item.label}>
                   <Label>{item.label}</Label>
                 </ListBox.Item>
               ))}
@@ -137,18 +175,44 @@ export default function AddLessonPage() {
           </Select.Popover>
         </Select>
 
-        {/* Image Upload */}
-        <Input
-          type="file"
-          name="image"
-          aria-label="Image (optional)"
-          accept="image/*"
-        />
+        {/* Image Upload & Preview */}
+        <div className="space-y-2">
+          <Input
+            type="file"
+            name="image"
+            aria-label="Upload Lesson Image (Optional)"
+            accept="image/*"
+            onChange={handleImageChange}
+          />
+
+          {imagePreview && (
+            <div className="relative w-40 h-40 border rounded-lg overflow-hidden mt-2 bg-gray-50">
+              <img
+                src={imagePreview}
+                alt="Selected Preview"
+                className="w-full h-full object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => setImagePreview(null)}
+                className="absolute top-1 right-1 bg-red-500 text-white text-xs px-2 py-1 rounded shadow-md hover:bg-red-600 transition"
+              >
+                Remove
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* Access Level */}
-        <Select name="accessLevel" isDisabled={!isPremium}>
-          <Label>Access Level</Label>
-          <Select.Trigger>
+        <Select
+          name="accessLevel"
+          aria-label="Select Access Level"
+          isDisabled={!isPremium}
+          selectedKey={accessLevel} // স্টেট দিয়ে কন্ট্রোল করা
+          onSelectionChange={(key) => setAccessLevel(key)} // সিলেক্ট করলে স্টেট আপডেট হবে
+        >
+          <Label id="access-label">Access Level</Label>
+          <Select.Trigger aria-labelledby="access-label">
             <Select.Value />
             <Select.Indicator />
           </Select.Trigger>
@@ -158,11 +222,12 @@ export default function AddLessonPage() {
               : "Choose who can view this lesson."}
           </Description>
           <Select.Popover>
-            <ListBox>
+            <ListBox aria-labelledby="access-label">
               {accessLevels.map((item) => (
                 <ListBox.Item
                   key={item.id}
                   id={item.id}
+                  textValue={item.label}
                   isDisabled={item.id === "premium" && !isPremium}
                 >
                   <Label>{item.label}</Label>

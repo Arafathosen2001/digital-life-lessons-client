@@ -1,8 +1,11 @@
 import LessonsPageContent from "@/Components/Lessons/LessonsPageContent";
+import { getLessons } from "@/lib/getData/data/lessons";
 
 
-export default function LessonsPage() {
+export default async function LessonsPage() {
+    const lessonsData=await getLessons();
+    console.log(lessonsData)
     return (
-        <LessonsPageContent></LessonsPageContent>
+        <LessonsPageContent lessonsData={lessonsData}></LessonsPageContent>
     )
 }

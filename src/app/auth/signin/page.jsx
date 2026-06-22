@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Input, Button, Card, Link } from "@heroui/react";
 import { authClient } from "@/lib/auth-client";
 import { useRouter, useSearchParams } from "next/navigation";
 import logo from "../../../../public/Image/logo.png"
 import Image from "next/image";
+import { toast } from "react-toastify";
+
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -19,6 +21,13 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/";
+  useEffect(() => {
+    const messg= searchParams.get("message");
+
+    if (messg === "login-required") {
+      toast.error("Please login first!");
+    }
+  }, [searchParams]);
 
   const handleSignIn = async (e) => {
     e.preventDefault();
@@ -186,7 +195,7 @@ export default function LoginPage() {
         <p className="text-center text-sm text-gray-400 mt-6">
           Don’t have an account?{" "}
           <Link
-            href={`/signup?redirect=${redirectTo}`}
+            href={`/auth/register?redirect=${redirectTo}`}
             className="text-violet-400 font-medium"
           >
             Create account
