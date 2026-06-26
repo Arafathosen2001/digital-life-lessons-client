@@ -1,6 +1,14 @@
+import { getServertSession } from "@/lib/getData/session/serverSesson";
 import { Card} from "@heroui/react";
+import { redirect } from "next/navigation";
 
-export default function DashboardHome() {
+export default async function DashboardHome() {
+  const session= await getServertSession();
+  const userRole=session?.user?.role;
+  // console.log(userRole);
+   if (userRole == "admin") {
+    redirect("/dashboard/admin");
+  } 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">

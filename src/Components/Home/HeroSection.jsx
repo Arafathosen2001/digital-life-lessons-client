@@ -1,4 +1,6 @@
 import { Button, Link } from "@heroui/react";
+import hero from "../../../public/Image/hero.png"
+import Image from "next/image";
 
 export default function HeroSection() {
   return (
@@ -81,11 +83,12 @@ export default function HeroSection() {
           {/* Right Illustration */}
 
           <div className="flex justify-center">
-            <img
-              src="/image/hero.png"
+            <Image src={hero} width={500} height={300} alt="Digital Life Lessons" ></Image>
+            {/* <img
+              src={hero}
               alt="Digital Life Lessons"
               className="w-full max-w-md"
-            />
+            /> */}
           </div>
         </div>
       </div>

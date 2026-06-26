@@ -7,49 +7,88 @@ import {
   Avatar,
   Chip,
 } from "@heroui/react";
-import { FaBookmark,FaClock, FaFlag, FaHeart, FaRegHeart, FaRegBookmark } from "react-icons/fa";
-import { BiSolidLike,BiLike } from "react-icons/bi";
+import { FaBookmark, FaClock, FaFlag, FaRegBookmark } from "react-icons/fa";
+import { BiSolidLike, BiLike } from "react-icons/bi";
 import { useClientSession } from "@/lib/getData/session/session";
+import { ReportLessonModal } from "./ReportLessonModal";
+import toast from "react-hot-toast";
 
 export default function LessonDetailsContent({ lessonById }) {
   const { session } = useClientSession();
   const user = session?.user;
   const lesson = lessonById;
-  const lessonId = lesson._id; 
+  const lessonId = lesson._id;
   const currentUser = user;
 
+  const [authorInfo, setAuthorInfo] = useState(null);
   // States
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+
+  // Save States (ফিক্সড: সেভ কাউন্টার যুক্ত করা হয়েছে)
   const [saved, setSaved] = useState(false);
+  const [saveCount, setSaveCount] = useState(0);
+  
+  // Report State (ফিক্সড: রিপোর্ট স্ট্যাটাস ট্র্যাক করার জন্য)
+  const [reported, setReported] = useState(false);
+  
   const [comments, setComments] = useState([]);
   const [newCommentText, setNewCommentText] = useState("");
+  // console.log(comments);
 
   // ব্যাকএন্ড থেকে প্রাথমিক ডেটা লোড করা
   useEffect(() => {
     if (!lessonId) return;
-
-    // লাইক স্ট্যাটাস আনা
+    if (lesson?.userId) {
+      fetch(`http://localhost:5000/api/user/${lesson.userId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (!data.message) {
+            setAuthorInfo(data);
+          }
+        })
+        .catch(err => console.error("Error fetching author info:", err));
+    }
+    // লাইক স্ট্যাটাস ও কাউন্ট আনা
     fetch(`http://localhost:5000/api/lessons/${lessonId}/like-status?userId=${currentUser?.id}`)
       .then(res => res.json())
       .then(data => {
-        setLikeCount(data.totalLikes);
+        setLikeCount(data.totalLikes || 0);
         setLiked(data.isLiked);
       })
       .catch(err => console.error("Error fetching like status:", err));
+
+    // সেভ স্ট্যাটাস ও কাউন্ট আনা (ফিক্সড: ব্যাকএন্ড থেকে totalSaves ও isSaved আশা করা হচ্ছে)
+    fetch(`http://localhost:5000/api/lessons/${lessonId}/save-status?userId=${currentUser?.id}`)
+      .then(res => res.json())
+      .then(data => {
+        setSaved(data.isSaved);
+        setSaveCount(data.totalSaves || 0); // ব্যাকএন্ডে totalSaves না থাকলে রেসপন্সে পাঠাতে হবে
+      })
+      .catch(err => console.error("Error fetching save status:", err));
+
+    // রিপোর্ট স্ট্যাটাস আনা (নতুন যুক্ত করা হয়েছে)
+    if (currentUser?.id) {
+      fetch(`http://localhost:5000/api/lessons/${lessonId}/report-status?userId=${currentUser?.id}`)
+        .then(res => res.json())
+        .then(data => {
+          setReported(data.isReported);
+        })
+        .catch(err => console.error("Error fetching report status:", err));
+    }
 
     // কমেন্ট লিস্ট আনা
     fetch(`http://localhost:5000/api/lessons/${lessonId}/comments`)
       .then(res => res.json())
       .then(data => setComments(data || []))
       .catch(err => console.error("Error fetching comments:", err));
-      
-  }, [lessonId, currentUser?.id]);
+
+  }, [lessonId, currentUser?.id, lesson?.userId]);
 
   // Like Handle Function
   const handleLike = async () => {
     if (!currentUser?.id) {
-      alert("Please log in to like this lesson!");
+      toast("Please log in to like this lesson!");
       return;
     }
 
@@ -57,7 +96,7 @@ export default function LessonDetailsContent({ lessonById }) {
       const res = await fetch(`http://localhost:5000/api/lessons/${lessonId}/like`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: currentUser.id }) // ফিক্সড: userId থেকে id করা হয়েছে
+        body: JSON.stringify({ userId: currentUser.id })
       });
       const data = await res.json();
       setLiked(data.liked);
@@ -67,10 +106,10 @@ export default function LessonDetailsContent({ lessonById }) {
     }
   };
 
-  // Save Handle Function
+  // Save Handle Function (ফিক্সড: কাউন্টার রিয়েল-টাইম আপডেট)
   const handleSave = async () => {
     if (!currentUser?.id) {
-      alert("Please log in to save this lesson!");
+      toast("Please log in to save this lesson!");
       return;
     }
 
@@ -78,37 +117,20 @@ export default function LessonDetailsContent({ lessonById }) {
       const res = await fetch(`http://localhost:5000/api/lessons/${lessonId}/save`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: currentUser.id }) // ফিক্সড: userId থেকে id করা হয়েছে
+        body: JSON.stringify({ userId: currentUser.id })
       });
       const data = await res.json();
       setSaved(data.saved);
-      alert(data.saved ? "Saved to favorites!" : "Removed from favorites!");
+      // রিয়েল-টাইমে কাউন্ট বাড়ানো বা কমানো
+      setSaveCount(prev => data.saved ? prev + 1 : prev - 1);
+      toast(data.saved ? "Saved to favorites!" : "Removed from favorites!");
     } catch (err) {
       console.error("Save error:", err);
     }
   };
 
-  // Report Handle Function
-  const handleReport = async () => {
-    if (!currentUser?.id) {
-      alert("Please log in to report this lesson!");
-      return;
-    }
-
-    const reason = prompt("Enter the reason for reporting this lesson:");
-    if (!reason) return;
-
-    try {
-      const res = await fetch(`http://localhost:5000/api/lessons/${lessonId}/report`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: currentUser.id, reason }) // ফিক্সড: userId থেকে id করা হয়েছে
-      });
-      if (res.ok) alert("Lesson reported successfully.");
-    } catch (err) {
-      console.error("Report error:", err);
-    }
-  };
+  // Report Handle Function (ফিক্সড: অলরেডি রিপোর্টেড হলে বাধা দেওয়া এবং স্টেট আপডেট)
+ 
 
   // Comment Post Handle Function
   const handleCommentSubmit = async (e) => {
@@ -116,10 +138,10 @@ export default function LessonDetailsContent({ lessonById }) {
     if (!newCommentText.trim()) return;
 
     if (!currentUser?.id) {
-      alert("Please log in to make a comment!");
+      toast("Please log in to make a comment!");
       return;
     }
-  
+
     try {
       const res = await fetch(`http://localhost:5000/api/lessons/${lessonId}/comments`, {
         method: "POST",
@@ -127,21 +149,18 @@ export default function LessonDetailsContent({ lessonById }) {
         body: JSON.stringify({
           userId: currentUser?.id,
           commentText: newCommentText,
-          // রিয়েল-টাইম ডিসপ্লের সুবিধার্থে নাম ও ইমেজ পাঠানো যেতে পারে
           userName: currentUser?.name || "Anonymous User",
           userAvatar: currentUser?.image || ""
         })
       });
-  
+
       if (!res.ok) {
         const errorText = await res.text();
         throw new Error(`Server responded with status ${res.status}: ${errorText}`);
       }
-  
+
       const postedComment = await res.json();
-      
-      // ইনস্ট্যান্ট UI আপডেটের জন্য স্টেট সেট করা
-      setComments([postedComment, ...comments]); 
+      setComments([postedComment, ...comments]);
       setNewCommentText("");
     } catch (err) {
       console.error("Comment submission error:", err.message);
@@ -153,8 +172,8 @@ export default function LessonDetailsContent({ lessonById }) {
       {/* Main Content */}
       <div className="lg:col-span-3">
         <img
-          src={lesson.image}
-          alt=""
+          src={lesson?.image || null}
+          alt={lesson?.title}
           className="w-full h-[400px] object-cover rounded-3xl"
         />
 
@@ -163,9 +182,10 @@ export default function LessonDetailsContent({ lessonById }) {
             <h1 className="text-4xl font-bold">{lesson.title}</h1>
           </div>
 
-          <Button color="primary" variant="flat" onClick={handleSave}>
+          {/* ফিক্সড: ওপরের সেভ বাটনটিকেও ডাইনামিক করা হলো এবং কাউন্ট দেখানো হলো */}
+          <Button color={saved ? "success" : "primary"} variant="flat" onClick={handleSave}>
             {saved ? <FaBookmark size={18} /> : <FaRegBookmark size={18} />}
-            {saved ? "Favorited" : "Add to Favorites"}
+            {saved ? `Favorited (${saveCount})` : `Add to Favorites (${saveCount})`}
           </Button>
         </div>
 
@@ -203,20 +223,22 @@ export default function LessonDetailsContent({ lessonById }) {
 
         {/* Actions Section */}
         <div className="flex flex-wrap gap-3">
-          <Button  variant={liked ? "solid" : "flat"} onClick={handleLike}>
-            {liked ? <BiSolidLike size={18} /> : <BiLike size={18} />}
-            Like ({likeCount})
+          <Button variant={liked ? "solid" : "flat"} onClick={handleLike}>
+            {liked ? <><BiSolidLike size={18} />Liked </> : <><BiLike size={18} />Like</>}
+            ({likeCount})
           </Button>
 
-          <Button variant={saved ? "solid" : "flat"} color={saved ? "primary" : "default"} onClick={handleSave}>
+          {/* ফিক্সড: রিপোর্ট বাটনের কন্ডিশনাল রেন্ডারিং */}
+         {reported ? (<Button
+            variant={reported && "danger-soft"}
             
-            {saved ? <><FaBookmark size={18} />Saved</> : <><FaRegBookmark />Save</>}
-          </Button>
-
-          <Button color="warning" variant="flat" onClick={handleReport}>
-            <FaFlag size={18} />
-            Report
-          </Button>
+            disabled={reported} // অলরেডি রিপোর্ট করলে বাটন ডিজেবল থাকবে
+          >
+            {reported && <FaFlag size={18} />}
+            {reported && "Reported" }
+          </Button>):
+          (<><ReportLessonModal currentUser={currentUser} lessonId={lessonId}>
+          </ReportLessonModal></>)}
         </div>
 
         {/* Comments Section */}
@@ -241,7 +263,12 @@ export default function LessonDetailsContent({ lessonById }) {
               <Card key={comment._id} className="p-4">
                 <div className="p-0">
                   <div className="flex gap-3">
-                    <Avatar src={comment.userAvatar || "https://i.pravatar.cc/150?img=33"} />
+                  <Avatar>
+              <Avatar.Image alt={comment?.name || "User"} src={comment?.userAvatar} />
+              <Avatar.Fallback>
+                {comment?.userName ? comment.userName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "U"}
+              </Avatar.Fallback>
+            </Avatar>
                     <div>
                       <h4 className="font-semibold text-sm">{comment.userName || "User"}</h4>
                       <p className="text-xs text-default-400 mb-1">
@@ -262,9 +289,14 @@ export default function LessonDetailsContent({ lessonById }) {
         <Card className="p-4">
           <h3 className="font-bold mb-4">About Author</h3>
           <div className="flex gap-3">
-            <Avatar src="https://i.pravatar.cc/150?img=5" size="lg" />
+            <Avatar>
+              <Avatar.Image alt={authorInfo?.name || "User"} src={authorInfo?.image} />
+              <Avatar.Fallback>
+                {authorInfo?.name ? authorInfo.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "U"}
+              </Avatar.Fallback>
+            </Avatar>
             <div>
-              <h4 className="font-semibold">Sarah Johnson</h4>
+              <h4 className="font-semibold">{authorInfo?.name}</h4>
               <p className="text-sm text-default-500">12 Lessons</p>
             </div>
           </div>

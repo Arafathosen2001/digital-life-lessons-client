@@ -88,7 +88,7 @@ import { useClientSession } from "@/lib/getData/session/session";
 export default function LessonsPageContent({lessonsData}) {
 const {session}=useClientSession();
 const user=session?.user;
-console.log(user?.isPremium)
+// console.log(user?.isPremium)
  
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
@@ -112,14 +112,12 @@ console.log(user?.isPremium)
       const matchDifficulty =
         difficulty === "All"
           ? true
-          : lesson.difficulty === difficulty;
+          : lesson.emotionalTone === difficulty;
 
-      const matchType =
-        type === "All"
-          ? true
-          : type === "Premium"
-          ? lesson.premium
-          : !lesson.premium;
+          const matchType = 
+          type === "All" 
+            ? true 
+            : lesson.accessLevel?.toLowerCase() === type.toLowerCase();
 
       return (
         matchSearch &&
@@ -185,12 +183,11 @@ console.log(user?.isPremium)
               <div className="space-y-2">
                 {[
                   "All",
-                  "Mindset",
-                  "Personal Growth",
-                  "Finance",
-                  "Mental Health",
-                  "Productivity",
-                  "Life",
+                  "growth",
+                  "career",
+                  "relationship",
+                  "mindset",
+                  "mistakes",
                 ].map((item,ind) => (
                   <button
                     key={ind}
@@ -217,9 +214,10 @@ console.log(user?.isPremium)
               <div className="space-y-2">
                 {[
                   "All",
-                  "Beginner",
-                  "Intermediate",
-                  "Advanced",
+                  "motivational",
+                  "sad",
+                  "realization",
+                  "gratitude",
                 ].map((item,ind) => (
                   <button
                     key={ind}
@@ -306,7 +304,7 @@ console.log(user?.isPremium)
             <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6 mt-6">
 
               {filteredLessons.map((lesson) => (
-                console.log(lesson),
+                // console.log(lesson),
                 <div
                   key={lesson._id}
                   className="  border border-slate-200 rounded-3xl overflow-hidden hover:shadow-lg transition"

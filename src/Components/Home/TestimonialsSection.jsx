@@ -38,14 +38,19 @@ export default function TestimonialsSection() {
           {testimonials.map((item) => (
             <div
               key={item.name}
-              className="bg-white rounded-[28px] border border-slate-200 p-8 shadow-sm hover:shadow-xl transition"
+              className=" rounded-[28px] border border-slate-200 p-8 shadow-sm hover:shadow-xl transition"
             >
               <p className="text-slate-600 leading-8">
                 "{item.review}"
               </p>
 
               <div className="flex items-center gap-4 mt-8">
-                <Avatar src={item.image} />
+              <Avatar>
+                    <Avatar.Image alt={item?.name || "User"} src={item?.image} />
+                    <Avatar.Fallback>
+                      {item?.name ? item.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "U"}
+                    </Avatar.Fallback>
+                  </Avatar>
 
                 <div>
                   <h4 className="font-bold">

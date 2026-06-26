@@ -1,8 +1,14 @@
+import { getServertSession } from "@/lib/getData/session/serverSesson";
 import { Button } from "@heroui/react";
 import Link from "next/link";
 import { FaArrowRight } from "react-icons/fa";
 
-export default function CTASection() {
+export default async function CTASection() {
+  const sesson= await getServertSession();
+  const user=sesson?.user;
+  const isPremium=user?.isPremium;
+  const admin=user?.role;
+  // console.log(admin)
   return (
     <section className="py-28 px-6">
       <div className="container mx-auto">
@@ -25,23 +31,25 @@ export default function CTASection() {
             </p>
 
             <div className="flex flex-wrap justify-center gap-4 mt-10">
-              <Button
-                href="/premium"
+              {isPremium && admin == "admin" ? (<><h1 className="flex justify-center items-center px-3 rounded-full bg1  text-xs font-semibold text-white">
+                 Alredy Premium ⭐
+                </h1></>): (<Link
+                href="/pricing"
                 size="lg"
                 color="default"
-                endContent={<FaArrowRight />}
-              >
+                className="flex items-center justify-center border bg1 text-gray-100 rounded-3xl px-5 py-2  hover:scale-105"
+              ><FaArrowRight />
                 Become Premium
-              </Button>
+              </Link>)}
 
-              <Button
+              <Link
                 href="/lessons"
                 variant="bordered"
                 size="lg"
-                className="text-white border-white"
+                className="flex items-center justify-center border bg2 text-gray-100 rounded-3xl px-5 py-2  hover:scale-105"
               >
                 Browse Lessons
-              </Button>
+              </Link>
             </div>
           </div>
         </div>

@@ -59,13 +59,22 @@ export default function PricingPage() {
             </p>
           </div>
 
-          <Button
-            color="primary"
-            size="lg"
-            className="mt-8 px-10 font-semibold shadow-xl transition hover:scale-105"
-          >
-            Upgrade To Premium
-          </Button>
+
+          <form action="/api/checkout_sessions" method="POST">
+            <section>
+              <button type="submit" color="primary"
+                size="lg" role="link" className="border bg2 py-3 px-8 rounded-3xl cursor-pointer mt-10  font-semibold shadow-xl transition hover:scale-[1.02]">
+                    Upgrade To Premium
+                  </button>
+              {/* <Button
+                color="primary"
+                size="lg"
+                className="mt-8 px-10 font-semibold shadow-xl transition hover:scale-105"
+              >
+                Upgrade To Premium
+              </Button> */}
+            </section>
+          </form>
         </div>
 
         {/* Stats */}
@@ -163,13 +172,22 @@ export default function PricingPage() {
                 ))}
               </ul>
 
-              <Button
+              <form action="/api/checkout_sessions" method="POST">
+                <section>
+                  <button type="submit" color="primary"
+                    size="lg" role="link" className="border bg1 p-2 rounded-3xl cursor-pointer mt-10 w-full font-semibold shadow-xl transition hover:scale-[1.02]">
+                    Upgrade Now
+                  </button>
+                </section>
+              </form>
+
+              {/* <Button
                 color="primary"
                 size="lg"
                 className="mt-10 w-full font-semibold shadow-xl transition hover:scale-[1.02]"
               >
-                Upgrade Now
-              </Button>
+                
+              </Button> */}
             </div>
           </Card>
         </div>

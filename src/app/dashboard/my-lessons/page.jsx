@@ -3,22 +3,33 @@
 import { useEffect, useState } from "react";
 import { Table, Button, Spinner } from "@heroui/react";
 import { authClient } from "@/lib/auth-client";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 export default function MyLessonsPage() {
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
+  // console.log(lessons)
+  const raout=useRouter()
 
   const { data: session, isPending } = authClient.useSession();
   const userId = session?.user?.id;
 
   const fetchLessons = async () => {
     if (!userId) return;
+    const {data} = await authClient.token();
+    const token=data?.token;
+    console.log(token)
 
     try {
       setLoading(true);
 
       const res = await fetch(
-        `http://localhost:5000/api/lessons?userId=${userId}`
+        `http://localhost:5000/api/lessons?userId=${userId}`,{
+          headers: {
+            authorization:`Bearer ${token}`
+          }
+        }
       );
 
       const data = await res.json();
@@ -34,12 +45,13 @@ export default function MyLessonsPage() {
     if (userId) fetchLessons();
   }, [userId]);
 
-  const handleView = (lesson) => {
-    alert(`${lesson.title}`);
+  const handleView = (id) => {
+    // toast(`lesson.${id}`);
+    raout.push(`/lessons/${id}`)
   };
 
   const handleEdit = async (lesson) => {
-    const newTitle = prompt("New title", lesson.title);
+    const newTitle = prompt("Only Edit Title", lesson.title);
     if (!newTitle) return;
 
     await fetch(`http://localhost:5000/api/lessons/${lesson._id}`, {
@@ -55,7 +67,7 @@ export default function MyLessonsPage() {
     await fetch(`http://localhost:5000/api/lessons/${id}`, {
       method: "DELETE",
     });
-
+    toast.success('lessons delete success')
     setLessons((prev) => prev.filter((l) => l._id !== id));
   };
 
@@ -111,7 +123,7 @@ export default function MyLessonsPage() {
                       <div className="flex gap-2">
                         <Button
                           size="sm"
-                          onPress={() => handleView(lesson)}
+                          onPress={() => handleView(lesson._id)}
                         >
                           View
                         </Button>

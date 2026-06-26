@@ -8,6 +8,7 @@ import { FiUploadCloud } from "react-icons/fi";
 import { authClient } from "@/lib/auth-client";
 import { Router } from "next/router";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
@@ -117,7 +118,7 @@ export default function RegisterPage() {
       if (error) throw new Error(error.message);
 
       if (data) {
-        alert("Account Created 🚀");
+        toast.success("Account Created Successfull");
         setForm({ name: "", email: "", password: "" });
         setImageFile(null);
         setPreview("");
@@ -125,7 +126,7 @@ export default function RegisterPage() {
         Router.push('/auth/signin')
       }
     } catch (err) {
-      alert(err.message || "Something went wrong!");
+      toast.error(err.message || "Something went wrong!");
     } finally {
       setLoading(false); // কাজ শেষ হলে লোডিং বন্ধ
     }

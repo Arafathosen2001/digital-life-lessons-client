@@ -6,11 +6,14 @@ import { useClientSession } from "@/lib/getData/session/session";
 import { authClient } from "@/lib/auth-client"; 
 import { Avatar, Card, Input, Button } from "@heroui/react";
 import Link from "next/link";
+// import { toast } from "react-toastify";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
   const { session, isPending: isSessionPending } = useClientSession();
   const user = session?.user;
-
+  const route=useRouter()
   // ইনপুট স্টেটসমূহ
   const [name, setName] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
@@ -56,7 +59,7 @@ export default function ProfilePage() {
   // প্রোফাইল আপডেট ফাংশন
   const handleUpdateProfile = async () => {
     if (!name.trim()) {
-      alert("Name cannot be empty!");
+      toast.error("Name cannot be empty!");
       return;
     }
 
@@ -76,12 +79,12 @@ export default function ProfilePage() {
     });
       if(data){
 
-              alert("Profile updated successfully!");
-              window.location.reload(); 
+              toast.success("Profile updated successfully!");
+              route.refresh(); 
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("Failed to update profile. Please try again.");
+      toast("Failed to update profile. Please try again.");
     } finally {
       setIsUpdating(false);
     }

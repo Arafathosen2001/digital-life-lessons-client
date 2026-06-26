@@ -19,6 +19,7 @@ export default function AddLessonPage() {
   const [accessLevel, setAccessLevel] = useState("free");
   const { session } = useClientSession();
   const user = session?.user;
+  // console.log(user)
 
   const isPremium = user?.isPremium;
 
@@ -93,6 +94,7 @@ export default function AddLessonPage() {
         visibility: "public",
         image: imageUrl,
         userId: user?.id || user?._id,
+        author:user?.name
       };
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/lessons`, {

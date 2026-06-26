@@ -6,3 +6,6 @@ export const getLessons = async () => {
 export const getLessonsById= async(id)=>{
     return serverFetch(`/api/lessons/${id}`);
 }
+export const getUsers = async () => {
+    return serverFetch('/api/users')
+}

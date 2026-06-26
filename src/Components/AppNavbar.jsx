@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Button, Avatar } from "@heroui/react";
+import { Button, Avatar, Spinner } from "@heroui/react";
 import {
   HiBars3,
   HiXMark,
@@ -13,12 +13,13 @@ import Image from "next/image";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useClientSession } from "@/lib/getData/session/session";
+import toast from "react-hot-toast";
 
 export default function AppNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const {session,isPending}=useClientSession();
+  const { session, isPending } = useClientSession();
   // console.log(session)
 
   // 👉 outside click handler
@@ -78,10 +79,10 @@ export default function AppNavbar() {
 
 
   }
-  const route=useRouter();
-  const handelLogout=async()=>{
+  const route = useRouter();
+  const handelLogout = async () => {
     await authClient.signOut();
-    alert('Sign Out Successfull')
+    toast.success('Sign Out Successfull')
     route.push('/auth/signin')
   }
 
@@ -115,7 +116,10 @@ export default function AppNavbar() {
         {/* Right Side */}
 
         <div className="hidden items-center gap-3 md:flex">
-          {!user ? (
+          {isPending ? (<><div className="flex flex-col items-center gap-2">
+        <Spinner color="warning" size="lg" />
+        <span className="text-xs text-muted">Loding...</span>
+      </div></>):!user ? (
             <>
               <Link
                 href="/auth/signin"
@@ -135,7 +139,9 @@ export default function AppNavbar() {
             </>
           ) : (
             <>
-              {user?.isPremium ? (
+              {user?.role == "admin" ? (<span className="rounded-full bg-warning/10 px-3 py-1 text-xs font-semibold text-warning">
+                  Admin ⭐
+                </span>): user?.isPremium ? (
                 <span className="rounded-full bg-warning/10 px-3 py-1 text-xs font-semibold text-warning">
                   Premium ⭐
                 </span>
@@ -156,8 +162,10 @@ export default function AppNavbar() {
                   className="flex items-center gap-2 cursor-pointer"
                 >
                   <Avatar>
-                    <Avatar.Image alt="John Doe" src={user?.image} />
-                    <Avatar.Fallback>JD</Avatar.Fallback>
+                    <Avatar.Image alt={user?.name || "User"} src={user?.image} />
+                    <Avatar.Fallback>
+                      {user?.name ? user.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "U"}
+                    </Avatar.Fallback>
                   </Avatar>
                 </button>
 

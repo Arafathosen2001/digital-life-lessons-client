@@ -1,41 +1,12 @@
+import { getServertSession } from "@/lib/getData/session/serverSesson";
+import Link from "next/link";
 import { FaLock, FaArrowRight } from "react-icons/fa";
 
-const lessons = [
-  {
-    id: 1,
-    title: "Mastering Emotional Intelligence",
-    category: "Mindset",
-    premium: true,
-    image:
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=1200",
-  },
-  {
-    id: 2,
-    title: "Financial Freedom Blueprint",
-    category: "Finance",
-    premium: false,
-    image:
-      "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?w=1200",
-  },
-  {
-    id: 3,
-    title: "Deep Work & Productivity",
-    category: "Productivity",
-    premium: true,
-    image:
-      "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200",
-  },
-  {
-    id: 4,
-    title: "Building Meaningful Relationships",
-    category: "Relationships",
-    premium: false,
-    image:
-      "https://images.unsplash.com/photo-1511988617509-a57c8a288659?w=1200",
-  },
-];
 
-export default function FeaturedLessons() {
+
+export default function FeaturedLessons({featuredLessons}) {
+  const {session}=getServertSession();
+const user=session?.user;
   return (
     <section className="py-28 from-white to-slate-50">
       <div className="max-w-7xl mx-auto px-5">
@@ -59,16 +30,16 @@ export default function FeaturedLessons() {
         {/* cards */}
 
         <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-8 mt-16">
-          {lessons.map((lesson) => (
+          {featuredLessons?.map((lesson) => (
             <div
-              key={lesson.id}
+              key={lesson._id}
               className="group overflow-hidden rounded-[30px] border border-slate-200 hover:shadow-2xl hover:-translate-y-3 transition-all duration-500"
             >
               {/* image */}
 
               <div className="relative h-72 overflow-hidden">
                 <img
-                  src={lesson.image}
+                  src={lesson.image || null}
                   alt={lesson.title}
                   className="w-full h-full object-cover group-hover:scale-110 transition duration-700"
                 />
@@ -79,7 +50,7 @@ export default function FeaturedLessons() {
                   {lesson.category}
                 </span>
 
-                {lesson.premium && (
+                {lesson.accessLevel == "premium" && (
                   <div className="absolute top-4 right-4">
                     <span className="flex items-center gap-2 bg-amber-500 text-white px-4 py-2 rounded-full text-sm font-semibold">
                       <FaLock />
@@ -101,10 +72,12 @@ export default function FeaturedLessons() {
                   experiences that can transform your life.
                 </p>
 
-                <button className="mt-6 flex items-center gap-3 font-semibold text-indigo-600">
-                  Read Lesson
-                  <FaArrowRight />
-                </button>
+                {lesson.accessLevel == "premium" && user?.isPremium === false ? (<><Link className="flex items-center justify-center border bg2 text-gray-100 rounded-3xl px-5 py-2  hover:scale-105" href={"/pricing"}>Upgrade</Link></>):
+                      (<>
+                      <Link href={`/lessons/${lesson._id}`} className="flex items-center justify-center border bg1 text-gray-100 rounded-3xl px-5 py-2  hover:scale-105">
+                      Read Lesson →
+                    </Link>
+                      </>)}
               </div>
             </div>
           ))}
