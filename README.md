@@ -1,36 +1,177 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🌱 Digital Life Lessons
 
-## Getting Started
+A modern full-stack web application where users can create, organize, and share meaningful life lessons. The platform allows users to preserve personal experiences, explore community wisdom, and upgrade to Premium for exclusive content.
 
-First, run the development server:
+## 🔗 Live Links
+
+- **Live Website:** https://digital-life-lessons-sigma.vercel.app/
+
+---
+
+## 📖 Project Purpose
+
+Digital Life Lessons is designed to help people document valuable life experiences and personal growth lessons. Users can browse public lessons, save favorites, interact with the community, and unlock premium content through a lifetime subscription.
+
+---
+
+## ✨ Key Features
+
+- 🔐 Better Auth Authentication (Email/Password & Google Login)
+- 👤 User & Admin Dashboard
+- 📚 Create, Update & Delete Life Lessons
+- 🌍 Public & Private Lesson Visibility
+- 💎 Premium & Free Lesson Access
+- ⭐ Featured Lessons controlled by Admin
+- ❤️ Like & 🔖 Favorite System
+- 💬 Comment System
+- 🚩 Report Lesson Functionality
+- 🔍 Search, Filter & Sort Lessons
+- 📄 Lesson Details with Author Information
+- 💳 Stripe Payment Integration
+- 📈 Dashboard Analytics
+- 📱 Fully Responsive Design
+- 🎨 Beautiful UI built with HeroUI
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+
+- Next.js 15
+- React 19
+- HeroUI 3.1
+- Tailwind CSS
+- Framer Motion
+- React Hook Form
+- React Hot Toast
+- React Icons
+
+### Backend
+
+- Node.js
+- Express.js
+- MongoDB
+- Better Auth
+- Stripe
+- JWT
+- CORS
+- Dotenv
+
+---
+
+## 📦 NPM Packages Used
+
+### Client
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+@heroui/react
+@better-auth/react
+@tanstack/react-query
+framer-motion
+react-hook-form
+react-hot-toast
+react-icons
+next
+tailwindcss
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Server
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+```bash
+express
+mongodb
+better-auth
+stripe
+cors
+dotenv
+jsonwebtoken
+nodemon
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 👨‍💻 User Features
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Register & Login
+- Google Authentication
+- Add New Lesson
+- Update Own Lesson
+- Delete Own Lesson
+- Manage Favorites
+- Like Lessons
+- Comment on Lessons
+- Report Lessons
+- Upgrade to Premium
+- View Premium Content
+- Personal Dashboard
+- Profile Management
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 👑 Admin Features
+
+- Dashboard Analytics
+- Manage Users
+- Promote Users to Admin
+- Manage All Lessons
+- Make Lessons Featured
+- Mark Lessons as Reviewed
+- View Reported Lessons
+- Delete Inappropriate Lessons
+- Ignore Reports
+
+---
+
+## 📂 Database Collections
+
+- users
+- lessons
+- favorites
+- comments
+- lessonReports
+- lessonLike
+
+---
+
+## 🚀 Future Improvements
+
+- Email Notifications
+- Lesson Sharing
+- AI Lesson Suggestions
+- Reading Progress Tracking
+- User Activity Heatmap
+- Export Lesson as PDF
+
+---
+
+## 📱 Responsive Design
+
+- Mobile
+- Tablet
+- Laptop
+- Desktop
+
+---
+
+## 🙌 Acknowledgements
+
+- HeroUI
+- Better Auth
+- MongoDB
+- Stripe
+- Vercel
+- Next.js
+
+---
+
+## 👨‍💻 Developer
+
+**Md. Arafat Hosen**
+
+Feel free to explore the project and share your feedback. ⭐
