@@ -8,7 +8,7 @@ export default function FeaturedLessons({featuredLessons}) {
   const {session}=getServertSession();
 const user=session?.user;
   return (
-    <section className="py-28 from-white to-slate-50">
+    <section className="py-10 from-white to-slate-50">
       <div className="max-w-7xl mx-auto px-5">
         {/* heading */}
 

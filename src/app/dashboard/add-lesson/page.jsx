@@ -10,8 +10,10 @@ import {
   Label,
   Description,
   ListBox,
+  Spinner,
 } from "@heroui/react";
 import { useClientSession } from "@/lib/getData/session/session";
+import toast from "react-hot-toast";
 
 export default function AddLessonPage() {
   const [loading, setLoading] = useState(false);
@@ -106,7 +108,10 @@ export default function AddLessonPage() {
       if (!res.ok) throw new Error("Failed to save lesson");
 
       const data = await res.json();
-      console.log("Saved Successfully:", data);
+      if(data){
+        toast.success('Leson Add Successfull')
+      }
+      // console.log("Saved Successfully:", data);
 
       e.target.reset();
       setImagePreview(null);
@@ -246,7 +251,8 @@ export default function AddLessonPage() {
           className="w-full"
           isLoading={loading}
         >
-          Create Lesson
+          {loading ? (<><Spinner color="current" size="sm" />Creating Lesson...</>):'Create Lesson'}
+          
         </Button>
 
       </Form>

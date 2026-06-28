@@ -12,11 +12,13 @@ import { BiSolidLike, BiLike } from "react-icons/bi";
 import { useClientSession } from "@/lib/getData/session/session";
 import { ReportLessonModal } from "./ReportLessonModal";
 import toast from "react-hot-toast";
+import Image from "next/image";
 
 export default function LessonDetailsContent({ lessonById }) {
   const { session } = useClientSession();
   const user = session?.user;
   const lesson = lessonById;
+  console.log(lesson)
   const lessonId = lesson._id;
   const currentUser = user;
 
@@ -88,7 +90,7 @@ export default function LessonDetailsContent({ lessonById }) {
   // Like Handle Function
   const handleLike = async () => {
     if (!currentUser?.id) {
-      toast("Please log in to like this lesson!");
+      toast.error("Please log in to like this lesson!");
       return;
     }
 
@@ -109,7 +111,7 @@ export default function LessonDetailsContent({ lessonById }) {
   // Save Handle Function (ফিক্সড: কাউন্টার রিয়েল-টাইম আপডেট)
   const handleSave = async () => {
     if (!currentUser?.id) {
-      toast("Please log in to save this lesson!");
+      toast.error("Please log in to save this lesson!");
       return;
     }
 
@@ -121,9 +123,8 @@ export default function LessonDetailsContent({ lessonById }) {
       });
       const data = await res.json();
       setSaved(data.saved);
-      // রিয়েল-টাইমে কাউন্ট বাড়ানো বা কমানো
       setSaveCount(prev => data.saved ? prev + 1 : prev - 1);
-      toast(data.saved ? "Saved to favorites!" : "Removed from favorites!");
+      toast.success(data.saved ? "Saved to favorites!" : "Removed from favorites!");
     } catch (err) {
       console.error("Save error:", err);
     }
@@ -138,7 +139,7 @@ export default function LessonDetailsContent({ lessonById }) {
     if (!newCommentText.trim()) return;
 
     if (!currentUser?.id) {
-      toast("Please log in to make a comment!");
+      toast.error("Please log in to make a comment!");
       return;
     }
 
@@ -171,10 +172,12 @@ export default function LessonDetailsContent({ lessonById }) {
     <div className="grid lg:grid-cols-4 gap-8 p-6 max-w-7xl mx-auto">
       {/* Main Content */}
       <div className="lg:col-span-3">
-        <img
+        <Image
           src={lesson?.image || null}
           alt={lesson?.title}
-          className="w-full h-[400px] object-cover rounded-3xl"
+          width={500}
+          height={300}
+          className="mx-auto rounded-3xl"
         />
 
         <div className="mt-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -194,7 +197,7 @@ export default function LessonDetailsContent({ lessonById }) {
           <Chip color="secondary">{lesson.emotionalTone}</Chip>
           <Chip>
             <FaClock size={14} className="inline mr-1" />
-            {lesson.readTime}
+            {lesson.createdAt}
           </Chip>
           <Chip color="success">{lesson.accessLevel}</Chip>
         </div>
@@ -204,8 +207,7 @@ export default function LessonDetailsContent({ lessonById }) {
         <section>
           <h2 className="text-2xl font-bold mb-4">About This Lesson</h2>
           <p className="text-default-600 leading-8">
-            Positive thinking is more than a feel-good attitude. It helps us overcome obstacles,
-            maintain motivation and develop resilience during difficult times.
+            {lesson.description}
           </p>
         </section>
 

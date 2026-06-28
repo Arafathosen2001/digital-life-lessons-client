@@ -164,7 +164,7 @@ export default function ManageLessonsTable({
 
                 <Table.Cell>
 
-                  <div className="flex gap-2 flex-wrap">
+                  <div className="flex gap-1 justify-between flex-wrap">
 
                     <Tooltip
                       content={

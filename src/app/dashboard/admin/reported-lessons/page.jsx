@@ -13,6 +13,7 @@ import toast from "react-hot-toast";
 // import { toast } from "react-toastify";
 
 export default function ReportedLessonsPage() {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 5000;
   // ======================
   // STATE MANAGEMENT
   // ======================
@@ -20,7 +21,7 @@ export default function ReportedLessonsPage() {
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState(null);
-  console.log(reports)
+  // console.log(reports)
 
   // ======================
   // FETCH REPORTED LESSONS FROM DB
@@ -28,7 +29,7 @@ export default function ReportedLessonsPage() {
   const fetchReports = async () => {
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:5000/api/reports");
+      const res = await fetch(`${baseUrl}/api/reports`);
       if (res.ok) {
         const data = await res.json();
         setReports(data);
@@ -78,7 +79,7 @@ const handleIgnore = async (lessonId) => {
 
   try {
     const res = await fetch(
-      `http://localhost:5000/api/reports/${lessonId}`,
+      `${baseUrl}/api/reports/${lessonId}`,
       {
         method: "DELETE",
       }

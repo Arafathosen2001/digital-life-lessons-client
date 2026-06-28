@@ -16,12 +16,12 @@ export function ReportLessonModal({ currentUser, lessonId }) {
         e.preventDefault();
 
         if (!currentUser?.id) {
-            toast("Please log in to report this lesson!");
+            toast.error("Please log in to report this lesson!");
             return;
         }
 
         if (reported) {
-            toast("You have already reported this lesson.");
+            toast.error("You have already reported this lesson.");
             return;
         }
 
@@ -34,15 +34,15 @@ export function ReportLessonModal({ currentUser, lessonId }) {
             
             if (res.ok) {
                 setReported(true);
-                toast("Lesson reported successfully.");
+                toast.success("Lesson reported successfully.");
                 raout.push(`/lessons`)
 
             } else {
-                toast("Failed to report. Please try again.");
+                toast.error("Failed to report. Please try again.");
             }
         } catch (err) {
             console.error("Report error:", err);
-            toast("An error occurred. Please check your connection.");
+            toast.error("An error occurred. Please check your connection.");
         }
     };
 

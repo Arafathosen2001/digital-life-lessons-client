@@ -70,10 +70,13 @@ export default function LoginPage() {
     try {
       setLoading(true);
 
-      const { error } = await authClient.signIn.social({
+      const {data, error } = await authClient.signIn.social({
         provider: "google",
         callbackURL: redirectTo,
       });
+      if(data){
+        toast.success('Google sign-in Successfull')
+      }
 
       if (error) {
         setMessage({

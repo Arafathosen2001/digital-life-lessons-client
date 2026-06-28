@@ -10,7 +10,7 @@ export default async function CTASection() {
   const admin=user?.role;
   // console.log(admin)
   return (
-    <section className="py-28 px-6">
+    <section className="py-10 px-6">
       <div className="container mx-auto">
         <div className="relative overflow-hidden rounded-[40px] bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">
 
@@ -31,18 +31,23 @@ export default async function CTASection() {
             </p>
 
             <div className="flex flex-wrap justify-center gap-4 mt-10">
-              {isPremium && admin == "admin" ? (<><h1 className="flex justify-center items-center px-3 rounded-full bg1  text-xs font-semibold text-white">
+              {!user ? (<><Link
+                href="/auth/signin"
+                variant="light"
+                className="border bg1 text-gray-100 rounded-3xl px-5 py-2  hover:scale-105"
+              >
+                Pleass Login
+              </Link></>):isPremium && admin == "admin" ? (<><h1 className="flex justify-center items-center px-3 rounded-full bg1  text-xs font-semibold text-white">
                  Alredy Premium ⭐
-                </h1></>): (<Link
+                </h1></>): (<>
+                  <Link
                 href="/pricing"
                 size="lg"
                 color="default"
                 className="flex items-center justify-center border bg1 text-gray-100 rounded-3xl px-5 py-2  hover:scale-105"
               ><FaArrowRight />
                 Become Premium
-              </Link>)}
-
-              <Link
+              </Link><Link
                 href="/lessons"
                 variant="bordered"
                 size="lg"
@@ -50,6 +55,9 @@ export default async function CTASection() {
               >
                 Browse Lessons
               </Link>
+                </>)}
+
+              
             </div>
           </div>
         </div>

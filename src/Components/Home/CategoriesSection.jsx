@@ -26,7 +26,7 @@ import {
     ];
   
     return (
-      <section className="py-24 ">
+      <section className="py-10 ">
         <div className="container mx-auto px-6">
   
           <h2 className="text-center text-4xl font-black">

@@ -123,7 +123,7 @@ export default function ManageUsersPage() {
         <Card.Content className="p-0">
           <Table aria-label="Manage Users">
             <Table.ScrollContainer>
-              <Table.Content>
+              <Table.Content aria-label="Manage Users">
                 <Table.Header>
                   <Table.Column isRowHeader >USER</Table.Column>
                   <Table.Column>EMAIL</Table.Column>

@@ -1,8 +1,10 @@
+import { getServertSession } from "@/lib/getData/session/serverSesson";
 import { Button, Link } from "@heroui/react";
-import hero from "../../../public/Image/hero.png"
+// import hero from "../../../public/Image/hero.png"
 import Image from "next/image";
 
-export default function HeroSection() {
+export default function HeroSection({User}) {
+  
   return (
     <section className="">
       <div className="max-w-7xl mx-auto px-6 lg:px-10 py-20">
@@ -22,13 +24,19 @@ export default function HeroSection() {
             </p>
 
             <div className="flex flex-wrap gap-4 mt-8">
-              <Link
+              {!User ? (<><Link
+                href="/auth/signin"
+                variant="light"
+                className="border bg1 text-gray-100 rounded-3xl px-5 py-2  hover:scale-105"
+              >
+                Pleass Login
+              </Link></>):(<Link
                 href="/lessons"
                 color="primary"
                 className="bg1 font-semibold border p-3"
               >
                 Explore Lessons
-              </Link>
+              </Link>)}
 
               {/* <Link
                 href="/premium"
@@ -83,7 +91,7 @@ export default function HeroSection() {
           {/* Right Illustration */}
 
           <div className="flex justify-center">
-            <Image src={hero} width={500} height={300} alt="Digital Life Lessons" ></Image>
+            <Image src={'/Image/hero.png'} width={500} height={300} alt="Digital Life Lessons" priority  ></Image>
             {/* <img
               src={hero}
               alt="Digital Life Lessons"

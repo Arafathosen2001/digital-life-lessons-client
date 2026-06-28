@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 export default function MyLessonsPage() {
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   // console.log(lessons)
   const raout=useRouter()
 
@@ -19,21 +20,30 @@ export default function MyLessonsPage() {
     if (!userId) return;
     const {data} = await authClient.token();
     const token=data?.token;
-    console.log(token)
+    // console.log(token)
 
     try {
       setLoading(true);
 
       const res = await fetch(
-        `http://localhost:5000/api/lessons?userId=${userId}`,{
+        `${baseUrl}/api/lessons?userId=${userId}`,
+        {
           headers: {
-            authorization:`Bearer ${token}`
-          }
+            authorization: `Bearer ${token}`,
+          },
         }
       );
-
+      
       const data = await res.json();
-      setLessons(data);
+      
+      // console.log("Response:", data);
+      
+      if (Array.isArray(data)) {
+        setLessons(data);
+      } else {
+        console.error(data);
+        setLessons([]);
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -54,7 +64,7 @@ export default function MyLessonsPage() {
     const newTitle = prompt("Only Edit Title", lesson.title);
     if (!newTitle) return;
 
-    await fetch(`http://localhost:5000/api/lessons/${lesson._id}`, {
+    await fetch(`${baseUrl}/api/lessons/${lesson._id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: newTitle }),
@@ -64,7 +74,7 @@ export default function MyLessonsPage() {
   };
 
   const handleDelete = async (id) => {
-    await fetch(`http://localhost:5000/api/lessons/${id}`, {
+    await fetch(`${baseUrl}/api/lessons/${id}`, {
       method: "DELETE",
     });
     toast.success('lessons delete success')
